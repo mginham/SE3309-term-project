@@ -78,16 +78,6 @@ app.get('/searchbookname', (req, res) => {
 });
 
 
-app.get('/searchauthor', (req, res) => {
-
-});
-
-
-app.get('/searchgenre', (req, res) => {
-
-});
-
-
 app.get('/getpopularbook', (req, res) => {
 
 });
