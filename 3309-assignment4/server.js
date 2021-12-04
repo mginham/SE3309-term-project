@@ -2,20 +2,15 @@ const express = require('express');
 const mysql = require('mysql');
 
 const fs = require('fs');
-const credentials = JSON.parse(fs.readFileSync('credentials.json'));
-
-let connection = mysql.createConnection({
-    host: credentials.host,
-    user: credentials.user,
-    password: credentials.password,
-    database: credentials.database
-});
+const newConnection = require('./DBConnection');
 
 const app = express();
 
 
 app.post('/login', (req, res) => {
-    connection.query(
+    let conn = newConnection();
+    conn.connect();
+    conn.query(
         `
             SELECT * FROM EMPLOYEE WHERE EMAIL = "${req.body.email}"
         `,
@@ -37,9 +32,18 @@ app.post('/login', (req, res) => {
 
 
 app.post('/makecardholder', (req, res) => {
-    connection.query(
+    let conn = newConnection();
+    conn.connect();
+    conn.query(
         `
-            
+        INSERT INTO cardholder(email, creator_SIN, cardholder_Name, home_Address, birthday)
+        VALUES (
+            ${req.query.email},
+            ${req.query.creator_SIN},
+            ${req.query.cardholder_Name},
+            ${req.query.home_Address},
+            ${req.query.birthday}
+        );
         `,
         (err, rows, fields) => {
             if (err) {
