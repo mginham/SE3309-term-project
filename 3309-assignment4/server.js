@@ -30,19 +30,17 @@ app.post('/login', (req, res) => {
     res.status(500).send('Database query failed.');
 });
 
-
-app.post('/makecardholder', (req, res) => {
+app.post('/makereservation', (req, res) => {
     let conn = newConnection();
     conn.connect();
     conn.query(
         `
-        INSERT INTO cardholder(email, creator_SIN, cardholder_Name, home_Address, birthday)
+        INSERT INTO reservation(serial_Number, email, reservation_Start, reservation_Deadline)
         VALUES (
+            ${req.query.serial_Number},
             ${req.query.email},
-            ${req.query.creator_SIN},
             ${req.query.cardholder_Name},
-            ${req.query.home_Address},
-            ${req.query.birthday}
+            ${req.query.home_Address}
         );
         `,
         (err, rows, fields) => {
@@ -62,11 +60,6 @@ app.post('/makecardholder', (req, res) => {
 });
 
 
-app.post('/makereservation', (req, res) => {
-
-});
-
-
 app.post('/returnbook', (req, res) => {
 
 });
@@ -75,12 +68,6 @@ app.post('/returnbook', (req, res) => {
 app.post('/payfeebalance', (req, res) => {
 
 });
-
-
-app.get('/searchbookname', (req, res) => {
-
-});
-
 
 app.get('/getpopularbook', (req, res) => {
 
