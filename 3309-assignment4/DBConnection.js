@@ -1,13 +1,12 @@
 const mysql = require('mysql');
-const credentials = JSON.parse(fs.readFileSync('credentials.json'));
 
 // connect to MySQL database on GCP
 function newConnection() {
     let conn = mysql.createConnection({
-        host: credentials.host,
-        user: credentials.user,
-        password: credentials.password,
-        database: credentials.database
+        host: "34.130.137.116",
+        user: "root",
+        password: "western",
+        database: "librarydb"
     });
     return conn;
 }

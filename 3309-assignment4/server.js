@@ -4,14 +4,18 @@ const mysql = require('mysql');
 const newConnection = require('./DBConnection');
 
 const app = express();
+const cors = require('cors');
+app.use(cors());
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
 
 app.post('/login', (req, res) => {
     let conn = newConnection();
     conn.connect();
     conn.query(
         `
-            SELECT * FROM EMPLOYEE WHERE EMAIL = "${req.body.email}"
+            SELECT * FROM employee WHERE EMAIL = "${req.body.email}"
         `,
         (err, rows, fields) => {
             if (err) {
@@ -20,13 +24,11 @@ app.post('/login', (req, res) => {
                 res.status(500).send(err);
             }
             else {
-                // return the first email
-                res.send(r[0]);
+                // is an employee
+                res.send(true);
             }
         }
     );
-    // should not be reachable as long as the database query succeeded
-    res.status(500).send('Database query failed.');
 });
 
 app.post('/makereservation', (req, res) => {
@@ -57,8 +59,6 @@ app.post('/makereservation', (req, res) => {
             }
         }
     );
-    // should not be reachable as long as the database query succeeded
-    res.status(500).send('Database query failed.');
 });
 
 
@@ -87,8 +87,6 @@ app.post('/returnbook', (req, res) => {
             }
         }
     );
-    // should not be reachable as long as the database query succeeded
-    res.status(500).send('Database query failed.');
 });
 
 app.post('/searchBook', (req, res) => {
@@ -114,8 +112,6 @@ app.post('/searchBook', (req, res) => {
                 res.send('Success');
             }
         }
-    // should not be reachable as long as the database query succeeded
-    res.status(500).send('Database query failed.');
 });
 
 app.get('/getPopularChoice', (req, res) => {
@@ -145,6 +141,9 @@ app.get('/getPopularChoice', (req, res) => {
                 res.send('Success');
             }
         }
-    // should not be reachable as long as the database query succeeded
-    res.status(500).send('Database query failed.');
+});
+
+const port = 5000
+app.listen(port, () => {
+    console.log(`Listening on port ${port}...`)
 });

@@ -8,40 +8,46 @@ function App() {
   const [serialNumber, setSerialNumber] = useState(null);
   const [cardholder, setCardholder] = useState(null);
   const [reservationID, setReservationID] = useState(null);
+  const [authorName, setAuthorName] = useState(null);
+  const [genre, setGenre] = useState(null);
 
   const login = (e) => {
     e.preventDefault();
-
-    fetch('/login', {
+    
+    fetch('http://localhost:5000/login', {
       method: 'POST',
-      headers: {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: email })
-      }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
     })
-      .then(response => {
-        console.log(response)
-      })
+      .then(res =>{
+        res.json().then(librarian => {
+          if (librarian){
+            setLibrarian(true);
+          }
+      }
+      )})
       .catch((error) => {
         console.log('error: ', error);
       })
   }
 
-  const reserve = () => {
+  const reserve = (e) => {
+    e.preventDefault();
 
   }
 
-  const returnBook = () => {
+  const returnBook = (e) => {
+    e.preventDefault();
 
   }
 
-  const searchBook = () => {
+  const searchBook = (e) => {
+    e.preventDefault();
 
   }
 
-  const getPopularChoice = () => {
+  const getPopularChoice = (e) => {
+    e.preventDefault();
 
   }
 
@@ -109,6 +115,32 @@ function App() {
     </Form>
   );
 
+  const searchForm = (
+    <Form id='search-form' className='w-50 h-50 card p-5 m-5' onSubmit={searchBook}>
+      <Form.Group controlId='author'>
+        <Form.Label>Author Name: </Form.Label>
+        <Form.Control
+          type='text'
+          name='authorName'
+          value={authorName}
+          placeholder='Enter the author name to be returned'
+          onChange={handleChange(setAuthorName)} />
+      </Form.Group>
+
+      <Form.Group controlId='genre'>
+        <Form.Label>Author Name: </Form.Label>
+        <Form.Control
+          type='text'
+          name='genre'
+          value={genre}
+          placeholder='Enter the author name to be returned'
+          onChange={handleChange(setGenre)} />
+      </Form.Group>
+
+      <Button type='submit' className='my-3'></Button>
+    </Form>
+  );
+
   const librarianView = (
     <div>
       <reservationForm />
@@ -118,13 +150,6 @@ function App() {
 
   return (
     <div className="App h-100 w-100">
-      <div id='tempbuttons'>
-        <Button onClick={reserve}>Make Reservation</Button>
-        <Button onClick={returnBook}>Return book</Button>
-        <Button onClick={searchBook}>Search Book</Button>
-        <Button onClick={getPopularChoice}>Get Popular Choice</Button>
-      </div>
-
       {librarian ? librarianView : loginForm}
 
     </div>
