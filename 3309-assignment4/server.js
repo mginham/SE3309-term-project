@@ -75,19 +75,77 @@ app.post('/returnbook', (req, res) => {
             IF book_Returned_Date > reservation_Deadline
                 overdue_Fee = DATEDIFF(book_returned_Date, reservation_Deadline)*overdue_Fee
             WHERE reservation_id = ${req.query.reservationID};
-        `
-    )
-});
-
-
-app.post('/payfeebalance', (req, res) => {
-
+        `,
+        (err, rows, fields) => {
+            if (err) {
+                // raise the error to the client
+                console.log(err);
+                res.status(500).send(err);
+            }
+            else {
+                // inform that the request was successful
+                res.send('Success');
+            }
+        }
+    );
+    // should not be reachable as long as the database query succeeded
+    res.status(500).send('Database query failed.');
 });
 
 app.post('/searchBook', (req, res) => {
-
+    let conn = newConnection();
+    conn.connect();
+    conn.query(
+        `
+        SELECT a.author_ID, a.author_Name, b.book_Title, b.isbn, b.genre, p.isbn, p.author_ID
+        FROM author a
+        INNER JOIN PublishTransaction p ON a.author_ID = p.author_ID
+        INNER JOIN Book b ON p.isbn = b.isbn
+        WHERE author_Name LIKE '%${req.query.author}%' AND genre="${req.query.genre}";
+        `
+    ),
+        (err, rows, fields) => {
+            if (err) {
+                // raise the error to the client
+                console.log(err);
+                res.status(500).send(err);
+            }
+            else {
+                // inform that the request was successful
+                res.send('Success');
+            }
+        }
+    // should not be reachable as long as the database query succeeded
+    res.status(500).send('Database query failed.');
 });
 
-app.get('/getpopularbook', (req, res) => {
-
+app.get('/getPopularChoice', (req, res) => {
+    let conn = newConnection();
+    conn.connect();
+    conn.query(
+        `
+        SELECT COUNT(reservation_ID) as total_Reservations 
+        FROM reservation 
+        WHERE serial_Number IN (
+        SELECT serial_Number 
+        FROM copy 
+        WHERE isbn IN (
+        SELECT isbn 
+        FROM book 
+        WHERE book_Title = ${req.query.bookTitle}))
+        `
+    ),
+        (err, rows, fields) => {
+            if (err) {
+                // raise the error to the client
+                console.log(err);
+                res.status(500).send(err);
+            }
+            else {
+                // inform that the request was successful
+                res.send('Success');
+            }
+        }
+    // should not be reachable as long as the database query succeeded
+    res.status(500).send('Database query failed.');
 });
