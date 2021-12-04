@@ -33,14 +33,17 @@ app.post('/login', (req, res) => {
 app.post('/makereservation', (req, res) => {
     let conn = newConnection();
     conn.connect();
+    var today = new Date();
+    var current = today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
+    var due = today.getFullYear() + '-' + (today.getMonth() + 6) + '-' + today.getDate();
     conn.query(
         `
         INSERT INTO reservation(serial_Number, email, reservation_Start, reservation_Deadline)
         VALUES (
             ${req.query.serial_Number},
             ${req.query.email},
-            ${req.query.cardholder_Name},
-            ${req.query.home_Address}
+            ${current},
+            ${due}
         );
         `,
         (err, rows, fields) => {
@@ -61,11 +64,27 @@ app.post('/makereservation', (req, res) => {
 
 
 app.post('/returnbook', (req, res) => {
-
+    let conn = newConnection();
+    conn.connect();
+    var today = new Date();
+    var current = today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
+    conn.query(
+        `
+            UPDATE Reservation
+            SET book_Returned_Date = current,
+            IF book_Returned_Date > reservation_Deadline
+                overdue_Fee = DATEDIFF(book_returned_Date, reservation_Deadline)*overdue_Fee
+            WHERE reservation_id = ${req.query.reservationID};
+        `
+    )
 });
 
 
 app.post('/payfeebalance', (req, res) => {
+
+});
+
+app.post('/searchBook', (req, res) => {
 
 });
 
