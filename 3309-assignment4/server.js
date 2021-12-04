@@ -1,7 +1,6 @@
 const express = require('express');
 const mysql = require('mysql');
 
-const fs = require('fs');
 const newConnection = require('./DBConnection');
 
 const app = express();
