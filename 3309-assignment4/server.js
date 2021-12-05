@@ -69,15 +69,13 @@ app.post('/makereservation', (req, res) => {
 
 
 app.post('/returnbook', (req, res) => {
-    var today = new Date();
-    var current = today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
     conn.query(
         `
             UPDATE reservation
             INNER JOIN cardholder ON reservation.email = cardholder.email
             SET reservation.book_Returned_Date = curdate(),
             cardholder.fee_Balance = cardholder.fee_Balance + GREATEST(DATEDIFF(reservation.book_Returned_Date, reservation.reservation_Deadline), 0)*reservation.overdue_Fee
-            WHERE reservation.reservation_ID = ${req.body.reservationID};
+            WHERE reservation.serial_Number = ${req.body.serial_Number};
         `,
         (err, rows, fields) => {
             if (err) {
@@ -178,7 +176,7 @@ app.post('/getReservations', (req, res) => {
                     reservations.push({
                         'ID': r.reservation_ID,
                         "Email": r.email,
-                        'Serial Number': r.numberOfReservations,
+                        'Serial Number': r.serial_Number,
                         'Start': r.reservation_Start.getFullYear() + '-' + (1 + r.reservation_Start.getMonth()) + '-' + r.reservation_Start.getDate(),
                         'Deadline': r.reservation_Deadline.getFullYear() + '-' + (1 + r.reservation_Deadline.getMonth()) + '-' + r.reservation_Deadline.getDate(),
                         'Returned': r.book_Returned_Date === null ? null : r.book_Returned_Date.getFullYear() + '-' + (1 + r.book_Returned_Date.getMonth()) + '-' + r.book_Returned_Date.getDate()

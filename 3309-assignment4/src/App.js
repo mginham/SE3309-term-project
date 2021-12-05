@@ -34,7 +34,7 @@ function BookList({ listName, books }) {
 
 
 function App() {
-  const [librarian, setLibrarian] = useState(true)
+  const [librarian, setLibrarian] = useState(false)
   const [email, setEmail] = useState(null);
   const [serialNumber, setSerialNumber] = useState(null);
   const [cardholder, setCardholder] = useState(null);
@@ -70,6 +70,7 @@ function App() {
           })
         }
       })
+      .catch(err => showError('Database failed to connect'));
   }
 
   const reserve = (e) => {
@@ -94,6 +95,7 @@ function App() {
           })
         }
       })
+      .catch(err => showError('Database failed to connect'));
   }
 
   const returnBook = (e) => {
@@ -117,6 +119,7 @@ function App() {
           })
         }
       })
+      .catch(err => showError('Database failed to connect'));
   }
 
   const searchBook = (e) => {
@@ -144,6 +147,7 @@ function App() {
           })
         }
       })
+      .catch(err => showError('Database failed to connect'));
   }
 
   const getPopularChoice = (e) => {
@@ -165,6 +169,7 @@ function App() {
           })
         }
       })
+      .catch(err => showError('Database failed to connect'));
   }
 
   const getReservations = (e) => {
@@ -203,6 +208,7 @@ function App() {
           })
         }
       })
+      .catch(err => showError('Database failed to connect'));
   }
 
   const handleChange = (setFn) => {
@@ -372,6 +378,9 @@ function App() {
       <Row className='justify-content-center'>
         {navButtons}
         {getPage()}
+      </Row>
+      <Row className='justify-content-center'>
+        <Button style={{width: '10%'}} onClick={() => setLibrarian(false)}>Quit</Button>
       </Row>
     </div>
   )
