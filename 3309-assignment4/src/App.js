@@ -38,7 +38,7 @@ function App() {
   const [email, setEmail] = useState(null);
   const [serialNumber, setSerialNumber] = useState(null);
   const [cardholder, setCardholder] = useState(null);
-  const [reservationID, setReservationID] = useState(null);
+  const [returnSerial, setReturnSerial] = useState(null);
   const [authorName, setAuthorName] = useState(null);
   const [genre, setGenre] = useState(null);
 
@@ -102,7 +102,7 @@ function App() {
     fetch('http://localhost:5000/returnbook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reservationID: reservationID })
+      body: JSON.stringify({ serial_Number: returnSerial })
     })
       .then(res => {
         if (!res.ok) {
@@ -112,7 +112,7 @@ function App() {
           res.text().then(status => {
             if (status === 'Success') {
               showSuccess('Book returned successfully')
-              setReservationID(null);
+              setReturnSerial(null);
             }
           })
         }
@@ -258,14 +258,14 @@ function App() {
     <Form id='return-form' className='col-6 h-50 card p-5 m-5' onSubmit={returnBook}>
       <h2>Return a Book</h2>
 
-      <Form.Group className='pt-3' controlId='reservationID'>
-        <Form.Label>Reservation ID: </Form.Label>
+      <Form.Group className='pt-3' controlId='returnSerial'>
+        <Form.Label>Serial Number: </Form.Label>
         <Form.Control
           type='text'
-          name='reservationID'
+          name='returnSerial'
           required
-          placeholder='Enter ID of the reservation to be returned'
-          onChange={handleChange(setReservationID)} />
+          placeholder='Enter the serial number of the book being returned'
+          onChange={handleChange(setReturnSerial)} />
       </Form.Group>
       <Button type='submit' className='my-3'>Return Book</Button>
     </Form>
