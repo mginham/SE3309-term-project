@@ -181,7 +181,7 @@ app.post('/getReservations', (req, res) => {
                         'Serial Number': r.numberOfReservations,
                         'Start': r.reservation_Start.getFullYear() + '-' + (1 + r.reservation_Start.getMonth()) + '-' + r.reservation_Start.getDate(),
                         'Deadline': r.reservation_Deadline.getFullYear() + '-' + (1 + r.reservation_Deadline.getMonth()) + '-' + r.reservation_Deadline.getDate(),
-                        'Returned':  r.book_Returned_Date === null ? null : r.book_Returned_Date.getFullYear() + '-' + (1 + r.book_Returned_Date.getMonth()) + '-' + r.book_Returned_Date.getDate()
+                        'Returned': r.book_Returned_Date === null ? null : r.book_Returned_Date.getFullYear() + '-' + (1 + r.book_Returned_Date.getMonth()) + '-' + r.book_Returned_Date.getDate()
                     })
                 }
                 res.send(reservations);
@@ -189,6 +189,27 @@ app.post('/getReservations', (req, res) => {
         }
     )
 });
+
+app.get('/feeBalance', (req, res) => {
+    console.log(req.query.email)
+    conn.query(
+        `
+        SELECT fee_Balance FROM cardholder
+        WHERE email="${req.query.email}";
+        `
+        ,
+        (err, rows, fields) => {
+            if (err) {
+                // raise the error to the client
+                console.log(err);
+                res.status(500).send(err.sqlMessage);
+            }
+            else {
+                res.send(rows[0].fee_Balance.toString());
+            }
+        }
+    )
+})
 
 const port = 5000
 app.listen(port, () => {

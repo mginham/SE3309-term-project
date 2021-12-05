@@ -46,6 +46,8 @@ function App() {
   const [popularBooks, setPopularBooks] = useState([]);
   const [reservations, setReservations] = useState([]);
 
+  const [cardholderBalance, setCardholderBalance] = useState(null);
+
   const [view, setView] = useState(0);
 
   const login = (e) => {
@@ -188,6 +190,19 @@ function App() {
           })
         }
       })
+
+    fetch(`http://localhost:5000/feeBalance/?email=${cardholder}`)
+      .then(res => {
+        if (!res.ok) {
+          res.text().then(showError);
+        }
+        else {
+          res.text().then(bal => {
+            console.log(bal)
+            setCardholderBalance(bal);
+          })
+        }
+      })
   }
 
   const handleChange = (setFn) => {
@@ -312,6 +327,13 @@ function App() {
 
         <Button type='submit' className='my-3 w-100'>Show Reservations</Button>
       </Form>
+
+      {cardholderBalance === null ? null :
+        <div>
+          <h3>Cardholder's Fee Balance</h3>
+          <h5>${cardholderBalance}</h5>
+        </div>
+      }
 
       <BookList books={reservations} listName='Reservations'></BookList>
     </div>
