@@ -262,6 +262,10 @@ function App() {
     }
   };
 
+  /*
+    JSX code for each type of database query form
+  */
+
   const loginForm = (
     <Form id='login-form' className='w-50 h-50 card p-5 m-5' onSubmit={login}>
       <Form.Group className='pt-3' controlId='email'>
@@ -454,7 +458,7 @@ function App() {
         {navButtons}
         {getPage()}
       </Row>
-      <Row className='justify-content-center'>
+      <Row className='justify-content-center py-3'>
         <Button style={{ width: '10%' }} onClick={() => setLibrarian(false)}>Quit</Button>
       </Row>
     </div>
