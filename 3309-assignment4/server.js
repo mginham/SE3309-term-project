@@ -71,11 +71,15 @@ app.post('/makereservation', (req, res) => {
 app.post('/returnbook', (req, res) => {
     conn.query(
         `
-            UPDATE reservation
-            INNER JOIN cardholder ON reservation.email = cardholder.email
+            UPDATE reservation, (SELECT * 
+            FROM reservation
+            WHERE reservation.serial_Number = ${req.body.serial_Number}
+            ORDER BY reservation.reservation_Start DESC
+            LIMIT 1) AS r
+            INNER JOIN cardholder ON r.email = cardholder.email
             SET reservation.book_Returned_Date = curdate(),
-            cardholder.fee_Balance = cardholder.fee_Balance + GREATEST(DATEDIFF(reservation.book_Returned_Date, reservation.reservation_Deadline), 0)*reservation.overdue_Fee
-            WHERE reservation.serial_Number = ${req.body.serial_Number};
+            cardholder.fee_Balance = cardholder.fee_Balance + GREATEST(DATEDIFF(r.book_Returned_Date, r.reservation_Deadline), 0)*r.overdue_Fee
+            WHERE reservation.reservation_ID = r.reservation_ID;
         `,
         (err, rows, fields) => {
             if (err) {
@@ -204,6 +208,62 @@ app.get('/feeBalance', (req, res) => {
             }
             else {
                 res.send(rows[0].fee_Balance.toString());
+            }
+        }
+    )
+})
+
+// demo: use wizards from popular books and 1 copy is available at markham library
+app.post('/bookAvailable', (req, res) => {
+    conn.query(
+        `
+        select book_Title, copy.serial_Number from copy
+        INNER JOIN library on copy.library_Address = library.library_Address
+        INNER JOIN book ON book.isbn = copy.isbn
+        INNER JOIN reservation ON copy.serial_Number = reservation.serial_Number
+        WHERE book_Title LIKE "%${req.body.book_Title}%"
+        AND library_Name LIKE "%${req.body.libraryName}%"
+        AND reservation_ID IS NOT null AND book_Returned_Date IS NOT null;
+        `
+        ,
+        (err, rows, fields) => {
+            if (err) {
+                // raise the error to the client
+                console.log(err);
+                res.status(500).send(err.sqlMessage);
+            }
+            else {
+                let books = []
+                for (r of rows){
+                    books.push({
+                        'Title': r.book_Title,
+                        'Serial Number': r.serial_Number
+                    })
+                }
+                res.send(books);
+            }
+        }
+    )
+})
+
+app.get('/getLibraries', (req, res) => {
+    conn.query(
+        `
+        SELECT * FROM library;
+        `
+        ,
+        (err, rows, fields) => {
+            if (err) {
+                // raise the error to the client
+                console.log(err);
+                res.status(500).send(err.sqlMessage);
+            }
+            else {
+                let libraries = []
+                for (r of rows){
+                    libraries.push(r.library_Name)
+                }
+                res.send(libraries);
             }
         }
     )

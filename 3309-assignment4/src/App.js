@@ -1,9 +1,8 @@
 import './App.css';
-import React, { useState } from 'react';
-import { Button, Form, Table, Row, ButtonGroup } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Button, Form, Table, Row, ButtonGroup, Dropdown, DropdownButton } from 'react-bootstrap';
 
 import { showError, ErrorContainer, showSuccess, SuccessContainer } from './toast';
-
 
 function BookList({ listName, books }) {
   return books.length > 0 ? (
@@ -34,21 +33,40 @@ function BookList({ listName, books }) {
 
 
 function App() {
-  const [librarian, setLibrarian] = useState(false)
+  const [librarian, setLibrarian] = useState(true)
   const [email, setEmail] = useState(null);
   const [serialNumber, setSerialNumber] = useState(null);
   const [cardholder, setCardholder] = useState(null);
   const [returnSerial, setReturnSerial] = useState(null);
   const [authorName, setAuthorName] = useState(null);
   const [genre, setGenre] = useState(null);
+  const [bookTitle, setBookTitle] = useState(null);
+  const [library, setLibrary] = useState(null);
 
   const [searchedBooks, setSearchedBooks] = useState([]);
   const [popularBooks, setPopularBooks] = useState([]);
+  const [availableBooks, setAvailableBooks] = useState([]);
   const [reservations, setReservations] = useState([]);
 
   const [cardholderBalance, setCardholderBalance] = useState(null);
 
   const [view, setView] = useState(0);
+
+  const [libraryList, setLibraryList] = useState([])
+
+  useEffect(() => {
+    fetch('http://localhost:5000/getLibraries').then(res => {
+      if (!res.ok) {
+        res.text().then(showError);
+      }
+      else {
+        res.json().then(libraries => {
+          setLibraryList(libraries);
+        }
+        )
+      }
+    })
+  }, [])
 
   const login = (e) => {
     e.preventDefault();
@@ -211,6 +229,33 @@ function App() {
       .catch(err => showError('Database failed to connect'));
   }
 
+  const getAvailable = (e) => {
+    e.preventDefault();
+
+    fetch('http://localhost:5000/bookAvailable', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book_Title: bookTitle, libraryName: library })
+    })
+      .then(res => {
+        if (!res.ok) {
+          res.text().then(showError);
+        }
+        else {
+          res.json().then(books => {
+            if (books.length === 0) {
+              showError('This book is not available at this library');
+            }
+            else {
+              setAvailableBooks(books);
+              setLibrary(null);
+            }
+          })
+        }
+      })
+      .catch(err => showError('Database failed to connect'));
+  }
+
   const handleChange = (setFn) => {
     return (event) => {
       setFn(event.target.value)
@@ -317,6 +362,7 @@ function App() {
     </div>
   );
 
+
   const cardholderReservationForm = (
     <div className='col-6 h-50 card p-5 m-5'>
       <Form id='search-form' onSubmit={getReservations}>
@@ -345,6 +391,32 @@ function App() {
     </div>
   );
 
+  const bookAvailableForm = (
+    <div className='col-6 h-50 card p-5 m-5'>
+      <Form id='book-available-form' onSubmit={getAvailable}>
+        <h2>Check a Book's Availability</h2>
+        <Form.Group className='py-3' controlId='bookTitle'>
+          <Form.Label>Book title: </Form.Label>
+          <Form.Control
+            type='text'
+            name='bookTitle'
+            required
+            placeholder='Enter the book title'
+            onChange={handleChange(setBookTitle)} />
+        </Form.Group>
+
+        <DropdownButton id="library-dropdown" title={library === null ? 'Select a library' : library}>
+          {libraryList.map(l => (
+            <Dropdown.Item onClick={() => setLibrary(l)}>{l}</Dropdown.Item>
+          ))}
+        </DropdownButton>
+
+        <Button type='submit' className='my-3 w-100'>Check Availability</Button>
+      </Form>
+
+      <BookList books={availableBooks} listName='Available Copies'></BookList>
+    </div>
+  );
 
   const getPage = () => {
     switch (view) {
@@ -358,6 +430,8 @@ function App() {
         return popularChoiceForm;
       case 4:
         return cardholderReservationForm;
+      case 5:
+        return bookAvailableForm;
       default:
         return reservationForm;
     }
@@ -370,6 +444,7 @@ function App() {
       <Button onClick={() => setView(2)} variant={view === 2 ? 'primary' : 'outline-primary'}>Search for a Book</Button>
       <Button onClick={() => setView(3)} variant={view === 3 ? 'primary' : 'outline-primary'}>Get Popular Books</Button>
       <Button onClick={() => setView(4)} variant={view === 4 ? 'primary' : 'outline-primary'}>Get Reservations</Button>
+      <Button onClick={() => setView(5)} variant={view === 5 ? 'primary' : 'outline-primary'}>Check Availability</Button>
     </ButtonGroup>
   )
 
@@ -380,7 +455,7 @@ function App() {
         {getPage()}
       </Row>
       <Row className='justify-content-center'>
-        <Button style={{width: '10%'}} onClick={() => setLibrarian(false)}>Quit</Button>
+        <Button style={{ width: '10%' }} onClick={() => setLibrarian(false)}>Quit</Button>
       </Row>
     </div>
   )
