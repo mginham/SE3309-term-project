@@ -437,7 +437,7 @@ function App() {
         <Button type='submit' className='my-3 w-100'>Search Book</Button>
       </Form>
 
-      <EntityTable books={searchedBooks} listName='Search Results'></EntityTable>
+      <EntityTable entities={searchedBooks} listName='Search Results'></EntityTable>
     </div>
   );
 
@@ -447,7 +447,7 @@ function App() {
       <h2>Get Most Popular Books</h2>
       <Button className='my-3' onClick={getPopularChoice}>View Books</Button>
 
-      <EntityTable books={popularBooks} listName='List of Popular Books'></EntityTable>
+      <EntityTable entities={popularBooks} listName='List of Popular Books'></EntityTable>
     </div>
   );
 
@@ -478,7 +478,7 @@ function App() {
         </div>
       }
 
-      <EntityTable books={reservations} listName='Reservations'></EntityTable>
+      <EntityTable entities={reservations} listName='Reservations'></EntityTable>
     </div>
   );
 
@@ -507,7 +507,7 @@ function App() {
         <Button type='submit' className='my-3 w-100'>Check Availability</Button>
       </Form>
 
-      <EntityTable books={availableBooks} listName='Available Copies'></EntityTable>
+      <EntityTable entities={availableBooks} listName='Available Copies'></EntityTable>
     </div>
   );
 
