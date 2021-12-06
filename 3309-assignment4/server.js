@@ -1,21 +1,22 @@
-const express = require('express');
-const mysql = require('mysql');
+const express = require('express'); // get express packages for express server
 
-const newConnection = require('./DBConnection');
+const newConnection = require('./DBConnection'); // connect to SQL data base script
 
-const conn = newConnection();
-conn.connect();
+const conn = newConnection(); // initilize connection
+conn.connect(); // connect to MySQL db hosted on GCP
 
-const app = express();
-const cors = require('cors');
-app.use(cors());
+const app = express(); // Start express server
+const cors = require('cors'); // Cors packages, Cross-origin resource sharing
+app.use(cors()); // allow front-end to send resources to server and vice versa
 
-const bodyParser = require('body-parser');
-app.use(bodyParser.json());
+const bodyParser = require('body-parser'); // middleware 
+app.use(bodyParser.json()); // use middleware to read requests and responses in JSON format
 
 // Demo: Used harrischristopher@example.com
+// To handle logins
 app.post('/login', (req, res) => {
     try {
+        // query database
         conn.query(
             `
                 SELECT * FROM employee WHERE EMAIL = "${req.body.email}"
@@ -44,12 +45,14 @@ app.post('/login', (req, res) => {
 });
 
 // Demo: Swindlers and wizards from popular books, markham copy to laurazimmerman@example.org
+// Signning-out book
 app.post('/makereservation', (req, res) => {
     try {
-        var today = new Date();
-        var current = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-        var addMonth = new Date(today.setMonth(today.getMonth() + 1));
-        var due = addMonth.getFullYear() + '-' + (addMonth.getMonth() + 1) + '-' + addMonth.getDate();
+        var today = new Date(); // today's date
+        var current = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate(); // format date to yyyy-mm-dd
+        var addMonth = new Date(today.setMonth(today.getMonth() + 1)); // book due next month
+        var due = addMonth.getFullYear() + '-' + (addMonth.getMonth() + 1) + '-' + addMonth.getDate(); // format due date to yyyy-mm-dd
+        // Insert query
         conn.query(
             `
             INSERT INTO reservation(serial_Number, email, reservation_Start, reservation_Deadline, overdue_Fee)
@@ -79,9 +82,10 @@ app.post('/makereservation', (req, res) => {
     }
 });
 
-
+// when cardholder returns book
 app.post('/returnbook', (req, res) => {
     try {
+        // update query to update reservation with book returned date, calculate any overdue fees, and update the cardholder's account
         conn.query(
             `
                 UPDATE reservation, (SELECT * 
@@ -113,10 +117,11 @@ app.post('/returnbook', (req, res) => {
 });
 
 // Demo: author Amy, writes mystery
+// Search for a book by part of name and genre
 app.post('/searchBook', (req, res) => {
     try {
-
-        let books = []
+        let books = [] // store database results
+        // find books with written by user inputted author name and genre
         conn.query(
             `
             SELECT a.author_ID, a.author_Name, b.book_Title, b.isbn, b.genre, p.isbn, p.author_ID
@@ -133,14 +138,15 @@ app.post('/searchBook', (req, res) => {
                     res.status(500).send(err.sqlMessage);
                 }
                 else {
-                    for (r of rows) {
+                    for (r of rows) { // iterate through results
+                        // add book to result array
                         books.push({
                             'Title': r.book_Title,
                             'Author': r.author_Name,
                             'Genre': r.genre
                         })
                     }
-                    res.send(books);
+                    res.send(books); // send results
                 }
             }
         )
@@ -150,8 +156,10 @@ app.post('/searchBook', (req, res) => {
     }
 });
 
+// get most read books
 app.get('/getPopularChoice', (req, res) => {
     try {
+        // query to get books that have been signed out the most
         conn.query(
             `
             select COUNT(copy.isbn) as numberOfReservations, book.book_Title 
@@ -171,14 +179,14 @@ app.get('/getPopularChoice', (req, res) => {
                 }
                 else {
                     // return the found books
-                    let books = []
-                    for (r of rows) {
-                        books.push({
+                    let books = [] // stores results
+                    for (r of rows) { // iterate through the results
+                        books.push({ // add book to results
                             'Title': r.book_Title,
                             'Times Reserved': r.numberOfReservations,
                         })
                     }
-                    res.send(books);
+                    res.send(books); // send results to frontend
                 }
             }
         )
@@ -188,8 +196,10 @@ app.get('/getPopularChoice', (req, res) => {
     }
 });
 
+// get all reservations under a cardholder
 app.post('/getReservations', (req, res) => {
     try {
+        // query to get reservation history for a particular cardholder
         conn.query(
             `
             select * from reservation
@@ -205,18 +215,17 @@ app.post('/getReservations', (req, res) => {
                 else {
                     // return the found books
                     let reservations = []
-                    //today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
                     for (r of rows) {
                         reservations.push({
                             'ID': r.reservation_ID,
                             "Email": r.email,
                             'Serial Number': r.serial_Number,
-                            'Start': r.reservation_Start.getFullYear() + '-' + (1 + r.reservation_Start.getMonth()) + '-' + r.reservation_Start.getDate(),
+                            'Start': r.reservation_Start.getFullYear() + '-' + (1 + r.reservation_Start.getMonth()) + '-' + r.reservation_Start.getDate(), // format date
                             'Deadline': r.reservation_Deadline.getFullYear() + '-' + (1 + r.reservation_Deadline.getMonth()) + '-' + r.reservation_Deadline.getDate(),
                             'Returned': r.book_Returned_Date === null ? null : r.book_Returned_Date.getFullYear() + '-' + (1 + r.book_Returned_Date.getMonth()) + '-' + r.book_Returned_Date.getDate()
                         })
                     }
-                    res.send(reservations);
+                    res.send(reservations); // send reservations
                 }
             }
         )
@@ -226,8 +235,10 @@ app.post('/getReservations', (req, res) => {
     }
 });
 
+// get outstanding fee balance for a cardholder
 app.get('/feeBalance', (req, res) => {
     try {
+        // query database to see if cardholder owes any money
         conn.query(
             `
             SELECT fee_Balance FROM cardholder
@@ -241,10 +252,10 @@ app.get('/feeBalance', (req, res) => {
                     res.status(500).send(err.sqlMessage);
                 }
                 else {
-                    if (rows[0].fee_Balance) {
-                        res.send(rows[0].fee_Balance.toString());
+                    if (rows[0].fee_Balance) { // get fee balance field
+                        res.send(rows[0].fee_Balance.toString()); // send fee balance as reply
                     }
-                    else {
+                    else { // if null
                         res.send('0');
                     }
                 }
@@ -257,8 +268,10 @@ app.get('/feeBalance', (req, res) => {
 })
 
 // demo: use wizards from popular books and 1 copy is available at markham library
+// check availibility of a book at a library
 app.post('/bookAvailable', (req, res) => {
     try {
+        // query to check a book is available at a library and have not been signed out by someone else
         conn.query(
             `
             select book_Title, copy.serial_Number from copy
@@ -278,13 +291,13 @@ app.post('/bookAvailable', (req, res) => {
                 }
                 else {
                     let books = []
-                    for (r of rows) {
-                        books.push({
+                    for (r of rows) { // for copies in the library
+                        books.push({ // add book
                             'Title': r.book_Title,
                             'Serial Number': r.serial_Number
                         })
                     }
-                    res.send(books);
+                    res.send(books); // send available copies
                 }
             }
         )
@@ -294,8 +307,10 @@ app.post('/bookAvailable', (req, res) => {
     }
 })
 
+// get list of libraries
 app.get('/getLibraries', (req, res) => {
     try {
+        // get all libarires
         conn.query(
             `
             SELECT * FROM library;
@@ -308,11 +323,11 @@ app.get('/getLibraries', (req, res) => {
                     res.status(500).send(err.sqlMessage);
                 }
                 else {
-                    let libraries = []
-                    for (r of rows) {
+                    let libraries = [] // list of libraries
+                    for (r of rows) { // add library to libararies list
                         libraries.push(r.library_Name)
                     }
-                    res.send(libraries);
+                    res.send(libraries); // send libarires
                 }
             }
         )
