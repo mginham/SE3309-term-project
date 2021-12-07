@@ -124,7 +124,7 @@ app.post('/searchBook', (req, res) => {
         // find books with written by user inputted author name and genre
         conn.query(
             `
-            SELECT a.author_ID, a.author_Name, b.book_Title, b.isbn, b.genre, p.isbn, p.author_ID
+            SELECT a.author_Name, b.book_Title, b.genre
             FROM author a
             INNER JOIN publishtransaction p ON a.author_ID = p.author_ID
             INNER JOIN book b ON p.isbn = b.isbn
@@ -313,7 +313,7 @@ app.get('/getLibraries', (req, res) => {
         // get all libarires
         conn.query(
             `
-            SELECT * FROM library;
+            SELECT library_Name FROM library;
             `
             ,
             (err, rows, fields) => {
